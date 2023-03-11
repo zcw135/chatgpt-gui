@@ -19,6 +19,7 @@ from requests_futures.sessions import FuturesSession
 session = FuturesSession()
 from threading import Thread
 import functools
+import docx
 
 
 blog = ["Write a story on any topic."]
@@ -75,6 +76,33 @@ def getbbot():
 st.set_page_config(
     page_title="I.n.t.a ✌️", page_icon="chart_with_upwards_trend",layout="wide",initial_sidebar_state="expanded"
 )
+def saver():
+    try:
+        data = m.get_data("namita_c")
+    except:
+        data = ["Hi!", "An Error Occurred!", "What can you do", "I can do everything"] 
+
+    # Create a new Word document
+    doc = docx.Document()
+    counter = 0
+
+    # Loop through the data list and add each element as a new line
+    for line in data:
+        counter += 1
+        if len(line) > 0:
+            # Add a new paragraph to the document
+            p = doc.add_paragraph()
+            # Determine the speaker and add it to the paragraph
+            if counter % 2 == 0:
+                p.add_run("USER: ").bold = True
+            else:
+                p.add_run("BOT: ").bold = True
+
+            # Add the text to the paragraph
+            p.add_run(line)
+
+    # Save the Word document
+    doc.save("memory/conversation_history.docx")
 
 converse = st.markdown("")
 def bubble_chat(sender, message,key):
@@ -258,12 +286,19 @@ with tab2:
                             file_name='Teams.exe'
                     )
             except:
+                saver()
+                with open("memory/conversation_history.docx", "rb") as file:
+                    btn = st.download_button(
+                            label="🚀 Download Conversation Document",
+                            data=file,
+                            file_name='conversation_history.docx'
+                )   
                 with open("memory/memory.json", "rb") as file:
                     btn = st.download_button(
-                            label="🚀 Download Json Prompt Dict!",
+                            label="🚀 Download Json Dict",
                             data=file,
                             file_name='memory.json'
-                )               
+                )  
             if btn:
                 st.subheader("Click Allow download and then 'more info' --> run anyway when executing.. 👇")
                 st.image("https://i.imgur.com/zXh8NEk.png")

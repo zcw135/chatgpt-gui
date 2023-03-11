@@ -1,3 +1,17 @@
+# import requests
+# import json
+
+# search_results = '{"results": "No search results"}'
+# query = "vaibhav arduino"
+# if query != "none":
+#     resp = requests.post(
+#         url="https://ddg-api.herokuapp.com/search",
+#         json={"query": query, "limit": 3},
+#         timeout=10,
+#     )
+#     resp.encoding = "utf-8" if resp.encoding is None else resp.encoding
+#     search_results = resp.text
+# print(json.dumps(json.loads(search_results), indent=4))
 import random
 import time
 import streamlit as st
@@ -176,7 +190,7 @@ else:
 def {cookies}_bot():
     data ={data}
     return Chatbot(config=data)
-    """.format(cookies=cookies,data={"email": os.environ['EMAIL'],"password": ""})
+    """.format(cookies=cookies,data={"email": os.environ['EMAIL'],"password": st.secrets["pwd"]})
     tab1.info(f"Configuring settings for user : {cookies}")
     exec(str1)
 
@@ -240,12 +254,12 @@ def lay_chat(data):
 @st.experimental_singleton
 def getcbot():
     email = "jecom46461@fom8.com"
-    return Chatbot(config={"email": email,"password": ""})
+    return Chatbot(config={"email": email,"password": st.secrets["pwd"]})
 
 @st.experimental_singleton
 def getebot():
     email = "vaibhavarduino@yahoo.com"
-    return Chatbot(config={"email": email,"password": ""})
+    return Chatbot(config={"email": email,"password": st.secrets["pwd"]})
 
 #     if k:
 #         getcbot.clear()
@@ -335,7 +349,7 @@ with tab2:
         restart_sequence = "\nHuman: "
         chatbot = Chatbot(config={
         "email": "jecom46461@fom8.com",
-        "password": ""
+        "password": st.secrets["pwd"]
         })
         if formula == "Auto":
             formula = ""

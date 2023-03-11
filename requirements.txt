@@ -5,3 +5,4 @@ requests_futures
 EdgeGPT
 streamlit-extras
 extra_streamlit_components
+python-docx

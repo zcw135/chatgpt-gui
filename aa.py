@@ -176,7 +176,7 @@ else:
 def {cookies}_bot():
     data ={data}
     return Chatbot(config=data)
-    """.format(cookies=cookies,data={"email": os.environ['EMAIL'],"password": "techi@721"})
+    """.format(cookies=cookies,data={"email": os.environ['EMAIL'],"password": ""})
     tab1.info(f"Configuring settings for user : {cookies}")
     exec(str1)
 
@@ -240,12 +240,12 @@ def lay_chat(data):
 @st.experimental_singleton
 def getcbot():
     email = "jecom46461@fom8.com"
-    return Chatbot(config={"email": email,"password": "techi@721"})
+    return Chatbot(config={"email": email,"password": ""})
 
 @st.experimental_singleton
 def getebot():
     email = "vaibhavarduino@yahoo.com"
-    return Chatbot(config={"email": email,"password": "techi@721"})
+    return Chatbot(config={"email": email,"password": ""})
 
 #     if k:
 #         getcbot.clear()
@@ -335,7 +335,7 @@ with tab2:
         restart_sequence = "\nHuman: "
         chatbot = Chatbot(config={
         "email": "jecom46461@fom8.com",
-        "password": "techi@721"
+        "password": ""
         })
         if formula == "Auto":
             formula = ""

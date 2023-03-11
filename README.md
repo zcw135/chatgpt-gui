@@ -1,4 +1,4 @@
-[![ChatGPT downloads](https://img.shields.io/badge/Visit%20Website-%F0%9F%9A%80%20streamlit%20%F0%9F%9A%80-red)](https://intagpt.streamlit.app)
+[![ChatGPT downloads](https://img.shields.io/badge/Visit%20Website-%F0%9F%9A%80%20streamlit%20%F0%9F%9A%80-red)](https://web-chatgpt.streamlit.app)
 ![visitor](https://visitor-badge.glitch.me/badge?page_id=vaibhavard.chatgpt-gui)
 
 <p align="center">
@@ -9,7 +9,7 @@
 
 **An Awesome Web Gui For Both Chatgpt and BingGPT , with hundreds of built in prompts and features that work out of the box without any API Keys!😄**
 
-**[🚀 View on Streamlit🚀](https://intagpt.streamlit.app)**
+**[🚀 View on Streamlit🚀](https://web-chatgpt.streamlit.app)**
 
 ---
 

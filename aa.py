@@ -185,13 +185,13 @@ with tab2:
         track_color="#29B5E8",  # optional
     )
     if switched:
-        os.environ['EMAIL'] = "vaibhavarduino@yahoo.com"
+        os.environ['EMAIL'] = "akiko.techi@gmail.com"
     else:
-        os.environ['EMAIL'] = "jecom46461@fom8.com"
+        os.environ['EMAIL'] = "akiko.techi@gmail.com"
 
 @st.cache_resource
 def getcbot():
-    email = "jecom46461@fom8.com"
+    email = "akiko.techi@gmail.com"
     bot = Chatbot(config={"email": email,"password": st.secrets["pwd"]})
     prev_text = ""
     for data in bot.ask(
@@ -315,7 +315,7 @@ with tab2:
         start_sequence = "\nAI: "
         restart_sequence = "\nHuman: "
         chatbot = Chatbot(config={
-        "email": "jecom46461@fom8.com",
+        "email": "akiko.techi@gmail.com",
         "password": st.secrets["pwd"]
         })
         if formula == "Auto":

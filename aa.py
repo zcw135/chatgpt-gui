@@ -172,7 +172,53 @@ def promptlist():
 
 
 tab2 , tab1 = st.tabs([ "Ask" , "Settings"])
-
+import streamlit.components.v1 as components
+with tab2:
+    components.html(
+    """
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+        .arrow {
+        width: 0; 
+        height: 0; 
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-bottom: 20px solid Crimson;
+        position: relative;
+        animation: arrow-move 1s infinite;
+        }
+        @keyframes arrow-move {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(50px);
+        }
+        }
+        .fade-out {
+        animation: fade-out 1s forwards;
+        }
+    @keyframes fade-out {
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+    }
+</style>
+</head>
+<body>
+<div class="arrow" style="animation-duration: 3s;"></div>
+<script>
+    setTimeout(() => {
+    document.body.classList.add("fade-out");
+    }, 10000);
+</script>
+<p style="position: relative;">Please Click settings first to configure task (writing) / bot personality (chat) (Over 100+ Prompts Available in settings)</p>
+</body>
+</html>
+""")
 
 with tab2:
     switched = st_toggle_switch(
